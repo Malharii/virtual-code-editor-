@@ -1,12 +1,9 @@
-import "./App.css";
+import usePing from "./hooks/apis/queries/usePings.js";
 
-/**
- * Root application component.
- *
- * @returns {JSX.Element} Root element of the application.
- */
 function App() {
-  return <>helllo world</>;
+  const { isLoading, data } = usePing();
+  if (isLoading) return <>loading</>;
+  return <>helllo {data.message}</>;
 }
 
 export default App;
