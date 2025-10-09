@@ -50,11 +50,12 @@ export const CreateProject = () => {
   const navigate = useNavigate();
   async function handleCreateProject() {
     console.log("Going to trigger the API");
+    console.log(createProjectMutation, "create projeact");
     try {
       const response = await createProjectMutation();
 
       console.log("Now we should redirect to the editor");
-      navigate(`/project/${response.data.id}`);
+      navigate(`/project/${response._id}`);
     } catch (error) {
       console.error(error);
     }

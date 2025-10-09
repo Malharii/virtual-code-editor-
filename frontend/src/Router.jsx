@@ -6,7 +6,7 @@ export const Router = () => {
   return (
     <Routes>
       <Route path="/" element={<CreateProject />} />
-      <Route path="/project/:projectId" element={<ProjectPlayGround />} />
+      <Route path="/project/:id" element={<ProjectPlayGround />} />
     </Routes>
   );
 };
