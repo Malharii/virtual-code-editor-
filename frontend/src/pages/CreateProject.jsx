@@ -1,6 +1,9 @@
 import { Button, Layout, Typography } from "antd";
 import { useCreateProject } from "../hooks/apis/mutaions/useCreateProject";
-const { Title, Paragraph } = Typography;
+import { useNavigate } from "react-router-dom";
+
+const { Title } = Typography;
+
 const layoutStyle = {
   minHeight: "100vh",
   background: "linear-gradient(135deg, #f8f9fa, #eef2f7)",
@@ -44,12 +47,14 @@ const footerStyle = {
 export const CreateProject = () => {
   const { Header, Footer, Content } = Layout;
   const { createProjectMutation } = useCreateProject();
-
+  const navigate = useNavigate();
   async function handleCreateProject() {
     console.log("Going to trigger the API");
     try {
-      await createProjectMutation();
+      const response = await createProjectMutation();
+
       console.log("Now we should redirect to the editor");
+      navigate(`/project/${response.data.id}`);
     } catch (error) {
       console.error(error);
     }
