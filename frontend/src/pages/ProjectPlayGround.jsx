@@ -1,5 +1,6 @@
 import { useParams } from "react-router-dom";
-import { EditorComponet } from "../components/molecules/EdditerComponet/EdditorComponet";
+import { EditorComponet } from "../components/molecules/EditorComponet/EdditorComponet";
+import { EditorButton } from "../components/atoms/EditorButton/EditorButton";
 
 export const ProjectPlayGround = () => {
   const { projectId } = useParams();
@@ -8,6 +9,8 @@ export const ProjectPlayGround = () => {
     <>
       projectId: {projectId}
       <EditorComponet />
+      <EditorButton isAcitve={true} />
+      <EditorButton isAcitve={false} />
     </>
   );
 };
