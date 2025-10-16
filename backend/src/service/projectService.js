@@ -43,7 +43,7 @@ export const createProjectService = async () => {
 
     // Use the full path to npm
     const response = await execPromisified(
-      `"${npmPath}" create vite@latest . -- --template react`,
+      `"${npmPath}" create vite@latest sandbox -- --template react`,
       {
         cwd: `./projects/${projectId}`,
         shell: true,
