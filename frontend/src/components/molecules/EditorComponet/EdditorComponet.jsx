@@ -30,8 +30,8 @@ export const EditorComponet = () => {
     <>
       {editorStore.theme && (
         <Editor
-          height={"80vh"}
-          width={"100%"}
+          height={"100vh"}
+          width={"80%"}
           defaultLanguage="javascript"
           defaultValue="//Welcome to PlayGround"
           options={{ fontSize: 18, fontFamily: "monospace" }}
