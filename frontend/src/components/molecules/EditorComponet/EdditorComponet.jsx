@@ -1,9 +1,26 @@
 import { Editor } from "@monaco-editor/react";
 import { useEffect, useState } from "react";
+import { useEditorSocketStore } from "../../../store/editorSocketStore";
+import { useActiveFileTabStore } from "../../../store/acitveFileTabStore";
 export const EditorComponet = () => {
   const [editorStore, setEditorStore] = useState({
     theme: null,
   });
+
+  const { editorSocket } = useEditorSocketStore();
+  const { activeFileTab, setActiveFileTab } = useActiveFileTabStore();
+  const languageMap = {
+    js: "javascript",
+    ts: "typescript",
+    tsx: "typescript",
+    jsx: "javascript",
+    html: "html",
+    css: "css",
+    json: "json",
+    txt: "plaintext",
+    md: "markdown",
+    gitignore: "gitignore",
+  };
 
   async function downloadTheme() {
     try {
@@ -23,16 +40,22 @@ export const EditorComponet = () => {
     }
   }
 
+  editorSocket?.on("readFileSuccess", (data) => {
+    console.log("readFileSuccess", data);
+    setActiveFileTab(data.path, data.value);
+  });
   useEffect(() => {
     downloadTheme();
   }, []);
+
   return (
     <>
       {editorStore.theme && (
         <Editor
           height={"100vh"}
           width={"80%"}
-          defaultLanguage="javascript"
+          defaultLanguage={undefined}
+          value={activeFileTab?.value || ""}
           defaultValue="//Welcome to PlayGround"
           options={{ fontSize: 18, fontFamily: "monospace" }}
           onMount={handleEditorTheme}

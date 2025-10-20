@@ -4,15 +4,29 @@ import { EditorButton } from "../components/atoms/EditorButton/EditorButton";
 import { TreesStructure } from "../components/organisms/TreeStructure/TreesStructure";
 import { useTreeStructuerStore } from "../store/treeStructuerStore";
 import { useEffect } from "react";
+import { useEditorSocketStore } from "../store/editorSocketStore";
+import { io } from "socket.io-client";
 
 export const ProjectPlayGround = () => {
   const { projectId: projectIdfromUrl } = useParams();
 
   const { setProjectId, projectId } = useTreeStructuerStore();
+  const { setEditorSocket } = useEditorSocketStore();
 
   useEffect(() => {
-    setProjectId(projectIdfromUrl);
-  }, [setProjectId, projectIdfromUrl]);
+    const backendUrl = import.meta.env.VITE_BACKEND_URL || "http://localhost:4000";
+    if (projectIdfromUrl) {
+      setProjectId(projectIdfromUrl);
+      const setEditorSocketconnection = io(`${backendUrl}/editor`, {
+        query: {
+          projectId: projectIdfromUrl,
+        },
+
+        transports: ["websocket"],
+      });
+      setEditorSocket(setEditorSocketconnection);
+    }
+  }, [setProjectId, projectIdfromUrl, setEditorSocket]);
 
   return (
     <>
@@ -24,7 +38,7 @@ export const ProjectPlayGround = () => {
               paddingRight: "10px",
               paddingTop: "0.3vh",
               minWidth: "250px",
-              maxWidth: "20%",
+              maxWidth: "25%",
               height: "99.7vh",
               overflow: "auto",
             }}
