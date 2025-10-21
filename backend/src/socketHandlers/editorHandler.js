@@ -1,12 +1,12 @@
-import { access } from "fs";
 import fs from "fs/promises";
-import path from "path";
-export const handleEditorSocketEvents = (socket) => {
+
+export const handleEditorSocketEvents = (socket, editorNameSpace) => {
   socket.on("writeFile", async ({ data, pathToFileorFolder }) => {
     try {
-      const response = await access.writeFile(pathToFileorFolder, data);
-      socket.emit("writeFileSuccess", {
+      const response = await fs.writeFile(pathToFileorFolder, data);
+      editorNameSpace.emit("writeFileSuccess", {
         data: "File written successfully",
+        path: pathToFileorFolder,
       });
     } catch (error) {
       console.log("Error the  writing file", error);

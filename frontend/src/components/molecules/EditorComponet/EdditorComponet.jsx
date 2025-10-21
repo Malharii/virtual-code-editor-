@@ -1,27 +1,28 @@
 import { Editor } from "@monaco-editor/react";
 import { useEffect, useState } from "react";
-import { useEditorSocketStore } from "../../../store/editorSocketStore";
 import { useActiveFileTabStore } from "../../../store/acitveFileTabStore";
+import { useEditorSocketStore } from "../../../store/editorSocketStore";
 export const EditorComponet = () => {
   const [editorStore, setEditorStore] = useState({
     theme: null,
   });
 
   const { editorSocket } = useEditorSocketStore();
-  const { activeFileTab, setActiveFileTab } = useActiveFileTabStore();
-  const languageMap = {
-    js: "javascript",
-    ts: "typescript",
-    tsx: "typescript",
-    jsx: "javascript",
-    html: "html",
-    css: "css",
-    json: "json",
-    txt: "plaintext",
-    md: "markdown",
-    gitignore: "gitignore",
-  };
+  const { activeFileTab } = useActiveFileTabStore();
+  // const languageMap = {
+  //   js: "javascript",
+  //   ts: "typescript",
+  //   tsx: "typescript",
+  //   jsx: "javascript",
+  //   html: "html",
+  //   css: "css",
+  //   json: "json",
+  //   txt: "plaintext",
+  //   md: "markdown",
+  //   gitignore: "gitignore",
+  // };
 
+  let timerId = null;
   async function downloadTheme() {
     try {
       const response = await fetch("/Dracula.json");
@@ -33,6 +34,20 @@ export const EditorComponet = () => {
     }
   }
 
+  function handleChange(value) {
+    if (timerId !== null) {
+      clearTimeout(timerId);
+    }
+    timerId = setTimeout(() => {
+      const editorContent = value;
+      console.log("sending wirtefile event");
+      editorSocket.emit("writeFile", {
+        data: editorContent,
+        pathToFileorFolder: activeFileTab?.path,
+      });
+    }, 2000);
+  }
+
   function handleEditorTheme(editor, monaco) {
     if (editorStore.theme) {
       monaco.editor.defineTheme("dracula", editorStore.theme);
@@ -40,10 +55,6 @@ export const EditorComponet = () => {
     }
   }
 
-  editorSocket?.on("readFileSuccess", (data) => {
-    console.log("readFileSuccess", data);
-    setActiveFileTab(data.path, data.value);
-  });
   useEffect(() => {
     downloadTheme();
   }, []);
@@ -59,6 +70,7 @@ export const EditorComponet = () => {
           defaultValue="//Welcome to PlayGround"
           options={{ fontSize: 18, fontFamily: "monospace" }}
           onMount={handleEditorTheme}
+          onChange={handleChange}
         />
       )}
     </>

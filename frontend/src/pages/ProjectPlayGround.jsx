@@ -37,8 +37,8 @@ export const ProjectPlayGround = () => {
               backgroundColor: "#333254",
               paddingRight: "10px",
               paddingTop: "0.3vh",
-              minWidth: "250px",
-              maxWidth: "25%",
+              minWidth: "200px",
+              maxWidth: "20%",
               height: "99.7vh",
               overflow: "auto",
             }}
