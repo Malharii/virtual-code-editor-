@@ -16,7 +16,7 @@ export const handleEditorSocketEvents = (socket, editorNameSpace) => {
     }
   });
 
-  socket.on("createFike", async ({ pathToFileorFolder }) => {
+  socket.on("createFile", async ({ pathToFileorFolder }) => {
     const isFileAlreadyPresent = await fs.stat(pathToFileorFolder);
 
     if (isFileAlreadyPresent) {
@@ -83,9 +83,22 @@ export const handleEditorSocketEvents = (socket, editorNameSpace) => {
     }
   });
 
+  socket.on("renameFolder", async ({ pathToFileorFolder, newName }) => {
+    try {
+      const response = await fs.rename(pathToFileorFolder, newName);
+      socket.emit("renameFolderSuccess", {
+        data: "Folder renamed successfully",
+      });
+    } catch (error) {
+      console.log("Error the   creating  file", error);
+      socket.emit("error", {
+        data: "Error the  creating  file",
+      });
+    }
+  });
   socket.on("deleteFolder", async ({ pathToFileorFolder }) => {
     try {
-      const response = await fs.rmdir(pathToFileorFolder, { recursive: true });
+      const response = await fs.rm(pathToFileorFolder, { recursive: true });
       socket.emit("deleteFolderSuccess", {
         data: "Folder deleted successfully",
       });
