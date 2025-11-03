@@ -2,6 +2,7 @@ import { Editor } from "@monaco-editor/react";
 import { useEffect, useState } from "react";
 import { useActiveFileTabStore } from "../../../store/acitveFileTabStore";
 import { useEditorSocketStore } from "../../../store/editorSocketStore";
+import { extensionToFileType } from "../../../utils/extensionToFileType";
 export const EditorComponet = () => {
   const [editorStore, setEditorStore] = useState({
     theme: null,
@@ -9,18 +10,6 @@ export const EditorComponet = () => {
 
   const { editorSocket } = useEditorSocketStore();
   const { activeFileTab } = useActiveFileTabStore();
-  // const languageMap = {
-  //   js: "javascript",
-  //   ts: "typescript",
-  //   tsx: "typescript",
-  //   jsx: "javascript",
-  //   html: "html",
-  //   css: "css",
-  //   json: "json",
-  //   txt: "plaintext",
-  //   md: "markdown",
-  //   gitignore: "gitignore",
-  // };
 
   let timerId = null;
   async function downloadTheme() {
@@ -66,6 +55,7 @@ export const EditorComponet = () => {
           height={"100vh"}
           width={"80%"}
           defaultLanguage={undefined}
+          language={extensionToFileType(activeFileTab?.extension)}
           value={activeFileTab?.value || ""}
           defaultValue="//Welcome to PlayGround"
           options={{ fontSize: 18, fontFamily: "monospace" }}

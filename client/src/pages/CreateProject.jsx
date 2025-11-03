@@ -1,6 +1,7 @@
 import { Button, Layout, Typography } from "antd";
 import { useCreateProject } from "../hooks/apis/mutaions/useCreateProject";
 import { useNavigate } from "react-router-dom";
+import { Boxes, BoxesCore } from "../components/ui/background-boxes";
 
 const { Title } = Typography;
 
@@ -72,7 +73,6 @@ export const CreateProject = () => {
         <Title level={2} style={{ color: "#333", marginBottom: "0.5rem" }}>
           Create a New Project
         </Title>
-        s
       </Header>{" "}
       <Content>
         {" "}
@@ -94,9 +94,8 @@ export const CreateProject = () => {
           </Button>{" "}
         </div>{" "}
       </Content>{" "}
-      <Footer style={footerStyle}>
-        © 2025 Malhar Dev Studio — Crafted with ❤️ using React & Ant Design{" "}
-      </Footer>
+      {/* <BoxesCore /> */}
+      <Footer style={footerStyle}>© 2025 Malhar Dev Studio — Crafted with ❤️</Footer>
     </Layout>
   );
 };
