@@ -15,6 +15,8 @@
     "@radix-ui/react-slot": "^1.2.3",
     "@tailwindcss/vite": "^4.1.16",
     "@tanstack/react-query": "^5.90.2",
+    "@xterm/addon-fit": "^0.10.0",
+    "@xterm/xterm": "^5.5.0",
     "antd": "^5.27.4",
     "axios": "^1.12.2",
     "class-variance-authority": "^0.7.1",

@@ -7,6 +7,8 @@ import { useEffect } from "react";
 import { useEditorSocketStore } from "../store/editorSocketStore";
 import { io } from "socket.io-client";
 
+import { BrowserTerminal } from "../components/molecules/BrowserTerminal/BrowserTerminal";
+
 export const ProjectPlayGround = () => {
   const { projectId: projectIdfromUrl } = useParams();
 
@@ -50,6 +52,10 @@ export const ProjectPlayGround = () => {
       </div>
       <EditorButton isAcitve={true} />
       <EditorButton isAcitve={false} />
+
+      <div>
+        <BrowserTerminal />
+      </div>
     </>
   );
 };
