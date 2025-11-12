@@ -27,10 +27,62 @@ export const handleContainerCreate = async (projectId, socket) => {
       },
     });
     console.log("container Created ", container.id);
+
     await container.start();
+
     console.log("container started");
+
+    container.exec(
+      {
+        Cmd: ["/bin/bash"],
+        User: "sandbox",
+        AttachStdin: true,
+        AttachStdout: true,
+        AttachStderr: true,
+      },
+      (err, exec) => {
+        if (err) {
+          console.error("Error executing command:", err);
+          return;
+        }
+
+        exec.start({ hijack: true }, (err, stream) => {
+          if (err) {
+            console.error("Error starting stream:", err);
+            return;
+          }
+
+          processStream(stream, socket);
+          socket.on("shell-input", (data) => {
+            stream.write(data);
+          });
+        });
+        // console.log("Container started successfully");
+        // socket.emit("container-started", { containerId: container.id });
+      }
+    );
   } catch (error) {
     console.error("Error creating container:", error);
     return res.status(500).json({ message: "Failed to create container" });
   }
 };
+
+function processStream(stream, socket) {
+  let buffer = Buffer.from("");
+  stream.on("data", (data) => {
+    buffer = Buffer.concat([buffer, data]);
+    console.log("Stream data:", buffer.toString());
+    socket.emit("shell-output", buffer.toString());
+    buffer = Buffer.from("");
+  });
+
+  stream.on("end", () => {
+    console.log("Stream ended");
+    socket.emit("shell-output", "Stream ended");
+  });
+
+  stream.on("error", (error) => {
+    console.error("Stream error:", error);
+    socket.emit("shell-output", `Stream error: ${error.message}`);
+  });
+}

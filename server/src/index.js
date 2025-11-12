@@ -62,10 +62,10 @@ terminalNameSpace.on("connection", (socket) => {
 
   let projectId = socket.handshake.query.projectId;
 
-  socket.on("shell-input", (data) => {
-    console.log("input recevied data", data);
-    terminalNameSpace.emit("shell-output", data);
-  });
+  // socket.on("shell-input", (data) => {
+  //   console.log("input recevied data", data);
+  //   terminalNameSpace.emit("shell-output", data);
+  // });
 
   socket.on("disconnect", async () => {
     await console.log("a terminal disconnected");
