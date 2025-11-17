@@ -8,6 +8,7 @@ import chokidar from "chokidar";
 
 import { handleEditorSocketEvents } from "./socketHandlers/editorHandler.js";
 import { handleContainerCreate } from "./containers/handleContainerCreate.js";
+import { WebSocketServer } from "ws";
 
 const app = express();
 const server = createServer(app);
@@ -51,28 +52,33 @@ editorNameSpace.on("connection", (socket) => {
   }
 
   handleEditorSocketEvents(socket, editorNameSpace);
-
-  socket.on("disconnect", async () => {
-    await console.log("a user disconnected");
-  });
-});
-const terminalNameSpace = io.of("/terminal");
-terminalNameSpace.on("connection", (socket) => {
-  console.log("a terminal connected");
-
-  let projectId = socket.handshake.query.projectId;
-
-  // socket.on("shell-input", (data) => {
-  //   console.log("input recevied data", data);
-  //   terminalNameSpace.emit("shell-output", data);
-  // });
-
-  socket.on("disconnect", async () => {
-    await console.log("a terminal disconnected");
-  });
-  handleContainerCreate(projectId, socket);
 });
 
 server.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
+});
+
+const webSocketForTerminal = new WebSocketServer({
+  noServer: true, // we will handle the upgrade event manually
+});
+
+server.on("upgrade", (req, tcpSocket, head) => {
+  /*
+  request: The incoming HTTP request object.
+  socket: The network socket between the server and the client. or tcp socket
+  head: buffer containing The first packet of the upgraded stream.
+  */
+  //this callback will call  when client tries to connect to the server through websocket
+
+  const isTerminal = req.url.includes("/terminal");
+  if (isTerminal) {
+    console.log("req url recived", req.url);
+    const projectId = req.url.split("=")[1];
+    console.log("projectId for terminal after split ", projectId);
+    handleContainerCreate(projectId, webSocketForTerminal, req, tcpSocket, head);
+  }
+});
+
+webSocketForTerminal.on("connection", (ws, req, container) => {
+  console.log("New terminal connected", ws, req, container);
 });
