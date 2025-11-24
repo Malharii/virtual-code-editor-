@@ -9,6 +9,8 @@ import chokidar from "chokidar";
 import { handleEditorSocketEvents } from "./socketHandlers/editorHandler.js";
 import { handleContainerCreate } from "./containers/handleContainerCreate.js";
 import { WebSocketServer } from "ws";
+import { handleTerminalCreation } from "./containers/handleTerminalCreation.js";
+import { error } from "node:console";
 
 const app = express();
 const server = createServer(app);
@@ -62,7 +64,7 @@ const webSocketForTerminal = new WebSocketServer({
   noServer: true, // we will handle the upgrade event manually
 });
 
-server.on("upgrade", (req, tcpSocket, head) => {
+server.on("upgrade", (req, tcp, head) => {
   /*
   request: The incoming HTTP request object.
   socket: The network socket between the server and the client. or tcp socket
@@ -75,10 +77,28 @@ server.on("upgrade", (req, tcpSocket, head) => {
     console.log("req url recived", req.url);
     const projectId = req.url.split("=")[1];
     console.log("projectId for terminal after split ", projectId);
-    handleContainerCreate(projectId, webSocketForTerminal, req, tcpSocket, head);
+    handleContainerCreate(projectId, webSocketForTerminal, req, tcp, head);
   }
 });
 
 webSocketForTerminal.on("connection", (ws, req, container) => {
   console.log("New terminal connected", ws, req, container);
+  handleTerminalCreation(container, ws);
+
+  // Handle terminal disconnection and container cleanup
+
+  ws.on("close", () => {
+    console.log("Terminal disconnected");
+    container.remove(
+      {
+        force: true,
+      },
+      (err, data) => {
+        if (err) {
+          console.log("Error removing container", err);
+        }
+        console.log("Container removed successfully", data);
+      }
+    );
+  });
 });
