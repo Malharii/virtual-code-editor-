@@ -5,6 +5,19 @@
   font-family: "Poppins", sans-serif;
 }
 
+.terminal {
+  background: #1e1e1e;
+  padding: 8px;
+}
+
+.xterm {
+  font-variant-ligatures: none; /* critical for terminals */
+}
+
+.xterm-screen {
+  line-height: 1.25;
+}
+
 @import "tailwindcss";
 
 @import "tw-animate-css";

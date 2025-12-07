@@ -8,12 +8,19 @@ import { useEditorSocketStore } from "../store/editorSocketStore";
 import { io } from "socket.io-client";
 
 import { BrowserTerminal } from "../components/molecules/BrowserTerminal/BrowserTerminal";
+import { useTerminalSocketStore } from "../store/terminalSocketStore";
 
 export const ProjectPlayGround = () => {
   const { projectId: projectIdfromUrl } = useParams();
 
   const { setProjectId, projectId } = useTreeStructuerStore();
-  const { setEditorSocket } = useEditorSocketStore();
+  const { setEditorSocket, editorSocket } = useEditorSocketStore();
+  const { setTerminalSocket } = useTerminalSocketStore();
+
+  function fetchPort() {
+    editorSocket.emit("getPort");
+    console.log("fetching port");
+  }
 
   useEffect(() => {
     const backendUrl = import.meta.env.VITE_BACKEND_URL;
@@ -26,9 +33,13 @@ export const ProjectPlayGround = () => {
 
         transports: ["websocket"],
       });
+      const ws = new WebSocket(
+        `ws://localhost:4000/terminal?projectId=${projectIdfromUrl}`
+      );
+      setTerminalSocket(ws);
       setEditorSocket(setEditorSocketconnection);
     }
-  }, [setProjectId, projectIdfromUrl, setEditorSocket]);
+  }, [setProjectId, projectIdfromUrl, setEditorSocket, setTerminalSocket]);
 
   return (
     <>
@@ -50,12 +61,22 @@ export const ProjectPlayGround = () => {
         )}
         <EditorComponet />
       </div>
-      <EditorButton isAcitve={true} />
-      <EditorButton isAcitve={false} />
-
+      {/* <EditorButton isAcitve={true} />
+      <EditorButton isAcitve={false} /> */}
       <div>
-        <BrowserTerminal />
+        <button
+          onClick={fetchPort}
+          style={{
+            backgroundColor: "black",
+            color: "white",
+            padding: "6px 12px",
+            borderRadius: "4px",
+          }}
+        >
+          Get Port
+        </button>
       </div>
+      <BrowserTerminal />
     </>
   );
 };

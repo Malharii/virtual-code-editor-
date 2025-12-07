@@ -1,60 +1,73 @@
 import React, { useEffect, useRef } from "react";
 import { Terminal } from "@xterm/xterm";
 import { FitAddon } from "@xterm/addon-fit";
-import "@xterm/xterm/css/xterm.css"; //  requred all style for terminal
-import { io } from "socket.io-client";
-import { useParams } from "react-router-dom";
+import { AttachAddon } from "@xterm/addon-attach";
+import "@xterm/xterm/css/xterm.css";
+import { useTerminalSocketStore } from "../../../store/terminalSocketStore";
+
 export const BrowserTerminal = () => {
-  const { projectId: projectIdfromUrl } = useParams();
   const terminalRef = useRef(null);
-  const socket = useRef(null);
+  const { terminalSocket } = useTerminalSocketStore();
+
   useEffect(() => {
+    if (!terminalRef.current || !terminalSocket) return;
+
     const term = new Terminal({
       cursorBlink: true,
       fontSize: 14,
-      fontFamily: "Ubuntu Mono",
+      fontFamily:
+        "JetBrains Mono, Fira Code, Source Code Pro, Menlo, Consolas, monospace",
+      lineHeight: 1.25,
       convertEol: true,
       theme: {
-        background: "#282a37",
-        foreground: "#f8f8f3",
-        cursor: "f8f8f3",
-        cursorAccent: "#282a37",
-        red: "#ff5544",
-        green: "#50fa7c",
-        yellow: "#f1fa8c",
-        cyan: "#8be9fd",
+        background: "#1e1e1e",
+        foreground: "#d4d4d4",
+        cursor: "#aeafad",
+        selection: "#264f78",
       },
     });
-    term.open(terminalRef.current);
-    let fitAddon = new FitAddon();
+
+    const fitAddon = new FitAddon();
     term.loadAddon(fitAddon);
-    fitAddon.fit();
-    socket.current = io(`${import.meta.env.VITE_BACKEND_URL}/terminal`, {
-      query: {
-        projectId: projectIdfromUrl,
-      },
+
+    term.open(terminalRef.current);
+
+    // ✅ Delay fit until layout is ready
+    requestAnimationFrame(() => {
+      fitAddon.fit();
+      term.focus();
     });
-    socket.current.on("shell-output", (data) => {
-      term.write(data);
-    });
-    term.onData((data) => {
-      console.log(data);
-      socket.current.emit("shell-input", data);
-    });
+
+    // ✅ REQUIRED for proper keyboard handling
+    terminalSocket.binaryType = "arraybuffer";
+
+    const attach = () => {
+      const attachAddon = new AttachAddon(terminalSocket);
+      term.loadAddon(attachAddon);
+    };
+
+    // ✅ Handle already-open socket
+    if (terminalSocket.readyState === WebSocket.OPEN) {
+      attach();
+    } else {
+      terminalSocket.onopen = attach;
+    }
+
     return () => {
       term.dispose();
-      socket.current.disconnect();
     };
-  }, []);
+  }, [terminalSocket]);
+
   return (
     <div
       ref={terminalRef}
+      tabIndex={0}
       style={{
-        height: "25vh",
-        overflow: "auto",
+        height: "25vh", // ✅ IMPORTANT
+        width: "100%",
+        overflow: "hidden",
+        outline: "none",
       }}
-      className="terminal"
-      id="terminal-class"
-    ></div>
+    />
   );
 };

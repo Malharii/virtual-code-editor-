@@ -15,7 +15,9 @@ export const handleEditorSocketEvents = (socket, editorNameSpace) => {
       });
     }
   });
-
+  socket.on("getPort", () => {
+    console.log("getPort event received");
+  });
   socket.on("createFile", async ({ pathToFileorFolder }) => {
     const isFileAlreadyPresent = await fs.stat(pathToFileorFolder);
 
