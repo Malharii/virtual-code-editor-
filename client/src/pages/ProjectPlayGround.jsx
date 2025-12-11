@@ -9,17 +9,20 @@ import { io } from "socket.io-client";
 
 import { BrowserTerminal } from "../components/molecules/BrowserTerminal/BrowserTerminal";
 import { useTerminalSocketStore } from "../store/terminalSocketStore";
+import { Browser } from "../components/organisms/Browser/Browser";
+// import { usePortStore } from "../store/portStore";
 
 export const ProjectPlayGround = () => {
   const { projectId: projectIdfromUrl } = useParams();
 
   const { setProjectId, projectId } = useTreeStructuerStore();
   const { setEditorSocket, editorSocket } = useEditorSocketStore();
-  const { setTerminalSocket } = useTerminalSocketStore();
+  const { terminalSocket, setTerminalSocket } = useTerminalSocketStore();
+  // const { port } = usePortStore();
 
   function fetchPort() {
-    editorSocket.emit("getPort");
     console.log("fetching port");
+    editorSocket.emit("getPort", { containerName: projectIdfromUrl });
   }
 
   useEffect(() => {
@@ -33,10 +36,16 @@ export const ProjectPlayGround = () => {
 
         transports: ["websocket"],
       });
-      const ws = new WebSocket(
-        `ws://localhost:4000/terminal?projectId=${projectIdfromUrl}`
-      );
-      setTerminalSocket(ws);
+      try {
+        const ws = new WebSocket(
+          `ws://localhost:4000/terminal?projectId=${projectIdfromUrl}`
+        );
+
+        setTerminalSocket(ws);
+      } catch (error) {
+        console.error("Failed to connect to terminal WebSocket:", error);
+      }
+
       setEditorSocket(setEditorSocketconnection);
     }
   }, [setProjectId, projectIdfromUrl, setEditorSocket, setTerminalSocket]);
@@ -61,8 +70,10 @@ export const ProjectPlayGround = () => {
         )}
         <EditorComponet />
       </div>
-      {/* <EditorButton isAcitve={true} />
-      <EditorButton isAcitve={false} /> */}
+      <div>
+        <EditorButton isAcitve={true} />
+        <EditorButton isAcitve={false} />
+      </div>
       <div>
         <button
           onClick={fetchPort}
@@ -76,7 +87,12 @@ export const ProjectPlayGround = () => {
           Get Port
         </button>
       </div>
-      <BrowserTerminal />
+      <div>
+        <BrowserTerminal />
+      </div>
+      <div>
+        {projectIdfromUrl && terminalSocket && <Browser projectId={projectIdfromUrl} />}
+      </div>
     </>
   );
 };

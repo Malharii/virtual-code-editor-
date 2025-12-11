@@ -7,12 +7,6 @@ import { Server } from "socket.io";
 import chokidar from "chokidar";
 
 import { handleEditorSocketEvents } from "./socketHandlers/editorHandler.js";
-import {
-  handleContainerCreate,
-  listContainers,
-} from "./containers/handleContainerCreate.js";
-import { WebSocketServer } from "ws";
-import { handleTerminalCreation } from "./containers/handleTerminalCreation.js";
 
 const app = express();
 const server = createServer(app);
@@ -54,10 +48,6 @@ editorNameSpace.on("connection", (socket) => {
       console.log(event, path);
     });
   }
-  socket.on("getPort", () => {
-    console.log("getPort event received");
-    listContainers();
-  });
 
   handleEditorSocketEvents(socket, editorNameSpace);
 });
@@ -65,49 +55,4 @@ editorNameSpace.on("connection", (socket) => {
 server.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
   console.log(process.cwd());
-});
-
-const webSocketForTerminal = new WebSocketServer({
-  noServer: true, // we will handle the upgrade event manually
-});
-webSocketForTerminal.on("connection", (ws, req, container) => {
-  console.log("New terminal connected");
-  handleTerminalCreation(container, ws);
-  ws.on("getPort", () => {
-    console.log("getPort event received in terminal websocket");
-  });
-
-  // Handle terminal disconnection and container cleanup
-
-  ws.on("close", () => {
-    console.log("Terminal disconnected");
-    container.remove(
-      {
-        force: true,
-      },
-      (err, data) => {
-        if (err) {
-          console.log("Error removing container", err);
-        }
-        console.log("Container removed successfully", data);
-      }
-    );
-  });
-});
-
-server.on("upgrade", (req, tcp, head) => {
-  /*
-  request: The incoming HTTP request object.
-  socket: The network socket between the server and the client. or tcp socket
-  head: buffer containing The first packet of the upgraded stream.
-  */
-  //this callback will call  when client tries to connect to the server through websocket
-
-  const isTerminal = req.url.includes("/terminal");
-  if (isTerminal) {
-    console.log("req url recived", req.url);
-    const projectId = req.url.split("=")[1];
-    console.log("projectId for terminal after split ", projectId);
-    handleContainerCreate(projectId, webSocketForTerminal, req, tcp, head);
-  }
 });
