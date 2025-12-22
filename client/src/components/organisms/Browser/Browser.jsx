@@ -1,33 +1,46 @@
 import { Input, Row } from "antd";
-import { useRef } from "react";
+import { useEffect } from "react";
+import { useEditorSocketStore } from "../../../store/editorSocketStore";
+import { usePortStore } from "../../../store/portStore";
+import { ReloadOutlined } from "@ant-design/icons";
 
 export const Browser = ({ projectId }) => {
-  const browserRef = useRef(null);
-  const port = 3000;
+  const { port, reloadKey, triggerReload } = usePortStore();
+  const { editorSocket } = useEditorSocketStore();
 
-  if (!port) {
-    return <div>Loading ...</div>;
-  }
+  // 🔹 Ask backend for port
+  useEffect(() => {
+    if (editorSocket && projectId) {
+      editorSocket.emit("getPort", { containerName: projectId });
+    }
+  }, [editorSocket, projectId]);
+
+  // 🔹 Listen for preview reload
+  useEffect(() => {
+    if (!editorSocket) return;
+
+    const onReload = () => {
+      console.log("🔄 Preview reload received");
+      triggerReload();
+    };
+
+    editorSocket.on("preview-reload", onReload);
+    return () => editorSocket.off("preview-reload", onReload);
+  }, [editorSocket, triggerReload]);
+
+  if (!port) return <div>Loading preview…</div>;
 
   return (
-    <Row
-      style={{
-        backgroundColor: "#22212b",
-      }}
-    >
+    <Row style={{ backgroundColor: "#22212b" }}>
       <Input
-        width={{
-          width: "100%",
-          height: "30px",
-          color: "white",
-          fontFamily: "Fira Code",
-          backgroundColor: "#282a35",
-        }}
-        defaultValue={`http://localhost:${port}`}
+        value={`http://localhost:${port}`}
+        readOnly
+        prefix={<ReloadOutlined onClick={triggerReload} />}
       />
+
       <iframe
-        ref={browserRef}
-        src={`http://localhost:${port}`}
+        key={reloadKey} // 🔥 THIS forces full reload
+        src={`http://localhost:${port}?v=${reloadKey}`} // 🔥 cache-buster
         style={{
           width: "100%",
           height: "95vh",

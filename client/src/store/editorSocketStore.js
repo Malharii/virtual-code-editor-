@@ -35,6 +35,11 @@ export const useEditorSocketStore = create((set) => {
       incomingSocket?.on("getPortSuccess", ({ port }) => {
         portSetter(port);
       });
+      incomingSocket?.on("preview-reload", () => {
+        console.log("✅ preview-reload received");
+        usePortStore.getState().triggerReload();
+      });
+
       set({ editorSocket: incomingSocket });
     },
   };

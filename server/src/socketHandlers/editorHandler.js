@@ -1,20 +1,30 @@
 import fs from "fs/promises";
 import { getContainerPort } from "../containers/handleContainerCreate.js";
+let previewReloadTimeout = null;
+
 export const handleEditorSocketEvents = (socket, editorNameSpace) => {
+  // ✏️ WRITE FILE
   socket.on("writeFile", async ({ data, pathToFileorFolder }) => {
     try {
-      const response = await fs.writeFile(pathToFileorFolder, data);
+      await fs.writeFile(pathToFileorFolder, data);
+
       editorNameSpace.emit("writeFileSuccess", {
-        data: "File written successfully",
         path: pathToFileorFolder,
       });
-    } catch (error) {
-      console.log("Error the  writing file", error);
-      socket.emit("error", {
-        data: "Error the  writing file",
-      });
+
+      // 🔥 debounce preview reload (2s)
+      if (previewReloadTimeout) clearTimeout(previewReloadTimeout);
+
+      previewReloadTimeout = setTimeout(() => {
+        editorNameSpace.emit("preview-reload");
+        console.log("🔥 preview-reload broadcasted (debounced)");
+      }, 2000);
+    } catch (err) {
+      console.error(err);
+      socket.emit("error", { data: "Write failed" });
     }
   });
+
   socket.on("getPort", () => {
     console.log("getPort event received");
   });
@@ -42,16 +52,24 @@ export const handleEditorSocketEvents = (socket, editorNameSpace) => {
 
   socket.on("readFile", async ({ pathToFileorFolder }) => {
     try {
-      const response = await fs.readFile(pathToFileorFolder);
-      console.log(response.toString());
+      const stat = await fs.stat(pathToFileorFolder);
+
+      // 🔥 IMPORTANT CHECK
+      if (stat.isDirectory()) {
+        console.log("⛔ Skipping directory read:", pathToFileorFolder);
+        return;
+      }
+
+      const response = await fs.readFile(pathToFileorFolder, "utf-8");
+
       socket.emit("readFileSuccess", {
-        value: response.toString(),
+        value: response,
         path: pathToFileorFolder,
       });
     } catch (error) {
-      console.log("Error the   creating  file", error);
+      console.error("❌ readFile error:", error.message);
       socket.emit("error", {
-        data: "Error the  creating  file",
+        data: "Error reading file",
       });
     }
   });

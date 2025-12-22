@@ -3,7 +3,7 @@ import { EditorComponet } from "../components/molecules/EditorComponet/EdditorCo
 import { EditorButton } from "../components/atoms/EditorButton/EditorButton";
 import { TreesStructure } from "../components/organisms/TreeStructure/TreesStructure";
 import { useTreeStructuerStore } from "../store/treeStructuerStore";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useEditorSocketStore } from "../store/editorSocketStore";
 import { io } from "socket.io-client";
 
@@ -18,12 +18,8 @@ export const ProjectPlayGround = () => {
   const { setProjectId, projectId } = useTreeStructuerStore();
   const { setEditorSocket, editorSocket } = useEditorSocketStore();
   const { terminalSocket, setTerminalSocket } = useTerminalSocketStore();
+  const [loadBrowser, setLoadBrowser] = useState(false);
   // const { port } = usePortStore();
-
-  function fetchPort() {
-    console.log("fetching port");
-    editorSocket.emit("getPort", { containerName: projectIdfromUrl });
-  }
 
   useEffect(() => {
     const backendUrl = import.meta.env.VITE_BACKEND_URL;
@@ -74,24 +70,15 @@ export const ProjectPlayGround = () => {
         <EditorButton isAcitve={true} />
         <EditorButton isAcitve={false} />
       </div>
-      <div>
-        <button
-          onClick={fetchPort}
-          style={{
-            backgroundColor: "black",
-            color: "white",
-            padding: "6px 12px",
-            borderRadius: "4px",
-          }}
-        >
-          Get Port
-        </button>
-      </div>
+      <div></div>
       <div>
         <BrowserTerminal />
       </div>
       <div>
-        {projectIdfromUrl && terminalSocket && <Browser projectId={projectIdfromUrl} />}
+        <button onClick={() => setLoadBrowser(true)}>Load My Browser</button>
+        {loadBrowser && projectIdfromUrl && terminalSocket && (
+          <Browser projectId={projectIdfromUrl} />
+        )}
       </div>
     </>
   );
